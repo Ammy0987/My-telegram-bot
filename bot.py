@@ -1,6 +1,15 @@
-bot.py
+import logging
+import os
+import requests
 
-import logging import os import requests from telegram import Update, ForceReply from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram import Update, ForceReply
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters,
+)
 
 Basic logging
 
