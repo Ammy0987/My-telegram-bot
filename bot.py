@@ -1,43 +1,53 @@
-import os
 import logging
-import openai
+import os
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+import openai
 
-# Basic logging
+# Logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# Setup API keys
+# Load API keys from environment
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = OPENAI_API_KEY
 
-# Function to handle incoming messages
+# Initialize OpenAI client (new SDK)
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
+
+# Command: /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Hello! I’m your AI bot, ask me anything.")
+
+# Handle all user text messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_message = update.message.text
-    user_name = update.effective_user.first_name
+    user_input = update.message.text
 
     try:
-        # Send message to OpenAI
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # tumia gpt-4 kama una access
+        # Call OpenAI API using new SDK
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": user_message}
+                {"role": "user", "content": user_input}
             ]
         )
 
-        reply = response['choices'][0]['message']['content']
-        await update.message.reply_text(reply)
+        answer = response.choices[0].message.content
+        await update.message.reply_text(answer)
 
     except Exception as e:
-        await update.message.reply_text("⚠️ Samahani, kuna kosa: " + str(e))
+        logging.error(f"OpenAI API error: {e}")
+        await update.message.reply_text("Sorry, there was an error. Try again later.")
 
-# Start the bot
+# Main
 if __name__ == '__main__':
+    print("I'm alive and working!")
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
     app.run_polling()
