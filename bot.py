@@ -1,30 +1,43 @@
 import os
 import logging
+import openai
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 
-# Logging kwa ufuatiliaji wa errors na status
+# Basic logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# Command handler ya /start
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! I'm alive and working 🤖")
-
-# Kupata token kutoka kwa environment variable
+# Setup API keys
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 
-if BOT_TOKEN is None:
-    raise ValueError("BOT_TOKEN is not set in environment variables!")
+# Function to handle incoming messages
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_message = update.message.text
+    user_name = update.effective_user.first_name
 
-# Kuanzisha bot
-app = ApplicationBuilder().token(BOT_TOKEN).build()
+    try:
+        # Send message to OpenAI
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # tumia gpt-4 kama una access
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": user_message}
+            ]
+        )
 
-# Kuongeza handler ya /start
-app.add_handler(CommandHandler("start", start))
+        reply = response['choices'][0]['message']['content']
+        await update.message.reply_text(reply)
 
-# Kuwasha bot
-if __name__ == "__main__":
+    except Exception as e:
+        await update.message.reply_text("⚠️ Samahani, kuna kosa: " + str(e))
+
+# Start the bot
+if __name__ == '__main__':
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.run_polling()
