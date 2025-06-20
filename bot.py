@@ -323,10 +323,13 @@ async def unblock(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🆘 Command za bot:\n"
-        "/start - Anza mazungumzo\n"
-        "/help - Orodha ya commands\n"
-        "/auth <password> - Thibitisha kama admin\n"
-        "/all_users - Onyesha watumiaji (admin tu)\n"
-        "/block <user_id> - Zuia mtumiaji (admin tu)\n"
-        "/unblock <user
+        "🆘 Orodha ya Command za Bot:\n\n"
+        "👤 Watumiaji wa kawaida:\n"
+        "/start - Anza mazungumzo na bot\n"
+        "/help - Onyesha orodha ya amri\n\n"
+        "🔐 Admin (baada ya uthibitisho kwa /auth <password>):\n"
+        "/auth <password> - Thibitisha utambulisho kama admin\n"
+        "/all_users - Onyesha taarifa za watumiaji wote\n"
+        "/block <user_id> - Zuia mtumiaji asitumie bot\n"
+        "/unblock <user_id> - Ruhusu mtumiaji aliyekuwa blocked"
+    )
